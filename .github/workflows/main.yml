@@ -5,17 +5,12 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2019 # 使用稍旧一点的系统，兼容性更好
+    # 恢复使用 windows-latest，它自带最新的 .NET 4.8 框架
+    runs-on: windows-latest
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-
-    # 核心：添加 .NET 4.0/4.5 的支持环境
-    - name: Setup .NET Framework Developer Pack
-      run: |
-        choco install netfx-4.0-devpack -y
-      shell: powershell
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
@@ -27,7 +22,11 @@ jobs:
       run: nuget restore Rubeus.sln
 
     - name: Build Solution
-      run: msbuild Rubeus.sln /p:Configuration=Release /p:Platform="Any CPU"
+      # 核心变动：添加 /p:TargetFrameworkVersion="v4.5" 
+      # 强制指定一个环境中百分之百存在的版本
+      run: |
+        msbuild Rubeus.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.5"
+      shell: powershell
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
