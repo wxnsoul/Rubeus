@@ -5,13 +5,19 @@ on:
 
 jobs:
   build:
-    # 恢复使用 windows-latest，它自带最新的 .NET 4.8 框架
-    runs-on: windows-latest
+    runs-on: windows-2019 # 2019 镜像对旧版 .NET 开发包的支持最稳定
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
 
+    # 关键步骤：使用专门的 Action 安装 .NET 4.5 开发包
+    - name: Setup .NET SDK
+      uses: microsoft/setup-dotnet@v4
+      with:
+        dotnet-version: '8.x' # 保持编译器更新
+
+    # 专门安装老旧的 .NET Framework 开发环境
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
@@ -22,10 +28,8 @@ jobs:
       run: nuget restore Rubeus.sln
 
     - name: Build Solution
-      # 核心变动：添加 /p:TargetFrameworkVersion="v4.5" 
-      # 强制指定一个环境中百分之百存在的版本
-      run: |
-        msbuild Rubeus.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.5"
+      # 不再指定 4.5，让它使用项目默认的 4.0，但我们给它权限升级编译
+      run: msbuild Rubeus.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.6.1"
       shell: powershell
 
     - name: Upload Artifact
