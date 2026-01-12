@@ -1,15 +1,21 @@
 name: Build Rubeus
 
 on: 
-  workflow_dispatch: # 允许手动点击运行
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019 # 使用稍旧一点的系统，兼容性更好
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
+
+    # 核心：添加 .NET 4.0/4.5 的支持环境
+    - name: Setup .NET Framework Developer Pack
+      run: |
+        choco install netfx-4.0-devpack -y
+      shell: powershell
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
